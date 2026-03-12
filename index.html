@@ -353,6 +353,13 @@
         </div>
         <div class="actions" style="display:flex; align-items:center;">
             <span class="hint"> Dica: Você pode editar os textos e clicar nas bolinhas para trocar de foto!</span>
+            
+            <button id="btn-save-cloud" onclick="saveToCloud()" style="margin-right: 10px; background-color: #333; color: white;">
+                <i data-feather="upload-cloud"></i>
+                <span>Salvar na Nuvem</span>
+                <div class="spinner" id="save-spinner"></div>
+            </button>
+            
             <button id="btn-export" onclick="exportToImage()">
                 <i data-feather="download"></i>
                 <span>Exportar Imagem</span>
@@ -497,6 +504,92 @@
     </main>
 
     <script>
+        // --- GitHub API Sync Logic ---
+        const REPO_OWNER = 'brunot-motta';
+        const REPO_NAME = 'organograma-vetor-prime';
+        const FILE_PATH = 'index.html';
+        
+        // Extract token from URL hash if present
+        function checkToken() {
+            const hash = window.location.hash;
+            if (hash.startsWith('#t=')) {
+                const token = hash.substring(3);
+                localStorage.setItem('gh_token_vetor', token);
+                window.history.replaceState(null, null, ' '); // Clean URL
+            }
+        }
+        checkToken();
+
+        async function saveToCloud() {
+            const token = localStorage.getItem('gh_token_vetor');
+            if (!token) {
+                alert("Você não tem permissão para salvar na nuvem. Peça o Link de Acesso Editável.");
+                return;
+            }
+
+            blurAll();
+
+            const btnSpan = document.querySelector('#btn-save-cloud span');
+            const btnIcon = document.querySelector('#btn-save-cloud svg');
+            const spinner = document.getElementById('save-spinner');
+
+            btnSpan.style.display = 'none';
+            btnIcon.style.display = 'none';
+            spinner.style.display = 'block';
+
+            try {
+                // 1. Get the current file SHA
+                const getRes = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`, {
+                    headers: { 'Authorization': `token ${token}` }
+                });
+                
+                let sha = null;
+                if (getRes.ok) {
+                    const data = await getRes.json();
+                    sha = data.sha;
+                } else if (getRes.status !== 404) {
+                    throw new Error("Falha ao buscar versão atual (SHA)");
+                }
+
+                // 2. Prepare HTML content to save (outerHTML of document)
+                // We need to fetch the clean doctype too
+                const htmlContent = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
+                
+                // Convert text to Base64 (UTF-8 safe)
+                const utf8Bytes = new TextEncoder().encode(htmlContent);
+                const binaryStr = String.fromCodePoint(...utf8Bytes);
+                const base64Content = btoa(binaryStr);
+
+                // 3. Upload new version
+                const putRes = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: "Atualização via Organograma Web",
+                        content: base64Content,
+                        sha: sha
+                    })
+                });
+
+                if (putRes.ok) {
+                    alert("✅ Organograma salvo na nuvem com sucesso!\nO link público será atualizado em 1 ou 2 minutos.");
+                } else {
+                    throw new Error("Erro ao salvar: " + await putRes.text());
+                }
+
+            } catch (err) {
+                console.error(err);
+                alert("Erro ao salvar: " + err.message);
+            } finally {
+                btnSpan.style.display = 'inline';
+                btnIcon.style.display = 'inline-block';
+                spinner.style.display = 'none';
+            }
+        }
+
         // Init Feather Icons
         feather.replace();
 
