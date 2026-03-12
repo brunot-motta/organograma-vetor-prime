@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Organograma - TRPR Americana - Operador Vetor Prime</title>
+    <!-- Google Fonts for Modern Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- html2canvas for export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- Feather Icons -->
+    <script src="https://unpkg.com/feather-icons"></script>
+    
+    <style>
+        :root {
+            /* Americanas Core Brand Colors */
+            --americanas-red: #E60014;
+            --americanas-red-dark: #C20011;
+            --text-dark: #2D3748;
+            --text-light: #718096;
+            --bg-page: #F7FAFC;
+            --bg-card: #FFFFFF;
+            --border-color: #E2E8F0;
+            --line-color: #CBD5E0;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.16);
+            --shadow-hover: 0 10px 20px rgba(230, 0, 20, 0.15), 0 6px 6px rgba(230, 0, 20, 0.10);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-page);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: auto;
+        }
+
+        /* Top Navigation / Header */
+        header {
+            background-color: var(--americanas-red);
+            color: white;
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(230,0,20,0.2);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 700;
+            font-size: 1.4rem;
+            letter-spacing: -0.5px;
+        }
+
+        .brand-logo::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 24px;
+            background-color: white;
+            border-radius: 2px;
+        }
+
+        .actions button {
+            background: white;
+            color: var(--americanas-red);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .actions button:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+            background: #FFF5F5;
+        }
+
+        .actions .hint {
+            color: rgba(255,255,255,0.8);
+            font-size: 0.9rem;
+            margin-right: 20px;
+        }
+
+        /* Container for the Tree */
+        .org-container {
+            flex-grow: 1;
+            padding: 4rem;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-width: max-content;
+        }
+
+        /* Tree CSS Hierarchy */
+        .tree ul {
+            padding-top: 40px; 
+            position: relative;
+            transition: all 0.5s;
+            display: flex;
+            justify-content: center;
+        }
+
+        .tree li {
+            float: left; 
+            text-align: center;
+            list-style-type: none;
+            position: relative;
+            padding: 40px 15px 0 15px;
+            transition: all 0.5s;
+        }
+
+        /* Connecting Lines */
+        .tree li::before, .tree li::after {
+            content: '';
+            position: absolute; 
+            top: 0; 
+            right: 50%;
+            border-top: 2px solid var(--line-color);
+            width: 50%; 
+            height: 40px;
+        }
+        .tree li::after {
+            right: auto; 
+            left: 50%;
+            border-left: 2px solid var(--line-color);
+        }
+
+        /* Remove lines from only child */
+        .tree li:only-child::after, .tree li:only-child::before {
+            display: none;
+        }
+
+        /* Remove space from the top of single children */
+        .tree li:only-child { 
+            padding-top: 0;
+        }
+
+        /* Remove left connector from first child and right connector from last child */
+        .tree li:first-child::before, .tree li:last-child::after {
+            border: 0 none;
+        }
+        /* Add back the down connector for last node */
+        .tree li:last-child::before {
+            border-right: 2px solid var(--line-color);
+            border-radius: 0 8px 0 0;
+        }
+        .tree li:first-child::after {
+            border-radius: 8px 0 0 0;
+        }
+
+        /* Downward connectors from parents */
+        .tree ul ul::before {
+            content: '';
+            position: absolute; 
+            top: 0; 
+            left: 50%;
+            border-left: 2px solid var(--line-color);
+            width: 0; 
+            height: 40px;
+            transform: translateX(-50%);
+        }
+
+        /* The Card Node */
+        .tree li .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 1.25rem 1.5rem;
+            text-decoration: none;
+            color: var(--text-dark);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            display: inline-block;
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            position: relative;
+            min-width: 220px;
+            max-width: 260px;
+            z-index: 10;
+        }
+
+        /* Node Structure */
+        .node-role, .node-name {
+            outline: none;
+            border-radius: 4px;
+            padding: 2px 4px;
+            transition: background 0.2s, box-shadow 0.2s;
+        }
+
+        .node-role[contenteditable="true"]:hover, .node-name[contenteditable="true"]:hover {
+            background: rgba(0,0,0,0.03);
+            box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);
+        }
+
+        .node-role[contenteditable="true"]:focus, .node-name[contenteditable="true"]:focus {
+            background: #fff;
+            box-shadow: inset 0 0 0 2px var(--americanas-red);
+        }
+
+        .node-role {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-light);
+            font-weight: 700;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .node-name {
+            font-weight: 600;
+            font-size: 1.05rem;
+            color: var(--text-dark);
+            margin-bottom: 4px;
+        }
+
+        .node-avatar {
+            width: 60px;
+            height: 60px;
+            background-color: #EDF2F7;
+            border-radius: 50%;
+            margin: 0 auto 12px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--americanas-red);
+            font-weight: 700;
+            font-size: 1.2rem;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+            overflow: hidden;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+
+        .node-avatar::after {
+            content: '📸';
+            position: absolute;
+            bottom: -20px;
+            font-size: 0.8rem;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            width: 100%;
+            text-align: center;
+            transition: bottom 0.2s;
+            padding: 2px 0;
+        }
+
+        .node-avatar:hover {
+            transform: scale(1.05);
+        }
+
+        .node-avatar:hover::after {
+            bottom: 0px;
+        }
+
+        /* Hover Effects */
+        .tree li .card:hover, .tree li .card:hover+ul li .card {
+            background: #fff;
+            color: var(--text-dark);
+            border: 1px solid var(--americanas-red);
+            box-shadow: var(--shadow-hover);
+            transform: translateY(-5px);
+        }
+        
+        .tree li .card:hover .node-avatar:not([style*="background-image"]) {
+            background-color: var(--americanas-red);
+            color: white;
+            border-color: var(--americanas-red);
+        }
+
+        /* Connector color change on hover */
+        .tree li .card:hover+ul li::after, 
+        .tree li .card:hover+ul li::before, 
+        .tree li .card:hover+ul::before, 
+        .tree li .card:hover+ul ul::before {
+            border-color: rgba(230,0,20,0.5);
+        }
+
+        /* Specialties */
+        .level-1 > .card {
+            border-top: 4px solid var(--americanas-red);
+        }
+        .level-2 > .card {
+            border-top: 3px solid #4A5568;
+        }
+
+        /* Decorative Background Pattern */
+        .bg-pattern {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            opacity: 0.03;
+            pointer-events: none;
+            background-image: radial-gradient(#E60014 1px, transparent 1px);
+            background-size: 30px 30px;
+            z-index: 1;
+        }
+        
+        #capture-area {
+            position: relative;
+            z-index: 2;
+            padding-bottom: 60px; /* Padding for export */
+        }
+
+        /* Spinner for export */
+        .spinner {
+            display: none;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(230,0,20,0.3);
+            border-radius: 50%;
+            border-top-color: var(--americanas-red);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <header data-html2canvas-ignore="true">
+        <div class="brand-logo" contenteditable="true" style="outline:none; padding: 2px 8px; border-radius: 4px;">
+            TRPR Americana - Operador Vetor Prime
+        </div>
+        <div class="actions" style="display:flex; align-items:center;">
+            <span class="hint"> Dica: Você pode editar os textos e clicar nas bolinhas para trocar de foto!</span>
+            <button id="btn-export" onclick="exportToImage()">
+                <i data-feather="download"></i>
+                <span>Exportar Imagem</span>
+                <div class="spinner" id="export-spinner"></div>
+            </button>
+        </div>
+    </header>
+
+    <div class="bg-pattern"></div>
+    
+    <!-- Hidden file input for uploading avatars -->
+    <input type="file" id="global-avatar-upload" accept="image/*" style="display:none;" onchange="handleAvatarUpload(event)">
+
+    <main class="org-container" id="capture-area">
+        <div class="tree">
+            <ul>
+                <!-- ROOT -->
+                <li class="level-1">
+                    <div class="card">
+                        <div class="node-avatar" onclick="triggerAvatarUpload(this)">A</div>
+                        <span class="node-role" contenteditable="true">Matriz Corporativa</span>
+                        <div class="node-name" contenteditable="true">Lojas Americanas S.A</div>
+                    </div>
+                    <ul>
+                        <!-- BOARD -->
+                        <li class="level-2">
+                            <div class="card">
+                                <div class="node-avatar" onclick="triggerAvatarUpload(this)">PA</div>
+                                <span class="node-role" contenteditable="true">Diretoria Operacional</span>
+                                <div class="node-name" contenteditable="true">Priscilla Alves</div>
+                            </div>
+                            <ul>
+                                <li>
+                                    <div class="card">
+                                        <div class="node-avatar" onclick="triggerAvatarUpload(this)">SL</div>
+                                        <span class="node-role" contenteditable="true">Gerente de Bases</span>
+                                        <div class="node-name" contenteditable="true">Sandro Lemos</div>
+                                    </div>
+                                    <ul>
+                                        <li>
+                                            <div class="card">
+                                                <div class="node-avatar" onclick="triggerAvatarUpload(this)">LS</div>
+                                                <span class="node-role" contenteditable="true">Líder de Operação</span>
+                                                <div class="node-name" contenteditable="true">Leonardo Seibert</div>
+                                            </div>
+                                            <ul>
+                                                <li>
+                                                    <div class="card">
+                                                        <div class="node-avatar" onclick="triggerAvatarUpload(this)"><i data-feather="users" style="width:24px;margin-top:2px;"></i></div>
+                                                        <span class="node-role" contenteditable="true">Equipe</span>
+                                                        <div class="node-name" contenteditable="true">Auxiliares de Logística</div>
+                                                    </div>
+                                                </li>
+                                            </ul>
+                                        </li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    <div class="card">
+                                        <div class="node-avatar" onclick="triggerAvatarUpload(this)">CF</div>
+                                        <span class="node-role" contenteditable="true">Coord. de Transportes</span>
+                                        <div class="node-name" contenteditable="true">Cleide Fidelis</div>
+                                    </div>
+                                    <ul>
+                                        <li>
+                                            <div class="card">
+                                                <div class="node-avatar" onclick="triggerAvatarUpload(this)">JP</div>
+                                                <span class="node-role" contenteditable="true">Líder de Transporte</span>
+                                                <div class="node-name" contenteditable="true">Jacqueline Prado</div>
+                                            </div>
+                                            <ul>
+                                                <li>
+                                                    <div class="card">
+                                                        <div class="node-avatar" onclick="triggerAvatarUpload(this)">ES</div>
+                                                        <span class="node-role" contenteditable="true">Despacher</span>
+                                                        <div class="node-name" contenteditable="true">Elton Santos</div>
+                                                    </div>
+                                                </li>
+                                                <li>
+                                                    <div class="card">
+                                                        <div class="node-avatar" onclick="triggerAvatarUpload(this)">MH</div>
+                                                        <span class="node-role" contenteditable="true">Assist. de Logística</span>
+                                                        <div class="node-name" contenteditable="true">Matheus Henrique</div>
+                                                    </div>
+                                                </li>
+                                            </ul>
+                                        </li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    <div class="card">
+                                        <div class="node-avatar" onclick="triggerAvatarUpload(this)">LF</div>
+                                        <span class="node-role" contenteditable="true">Superv. de Operações</span>
+                                        <div class="node-name" contenteditable="true">Luana Freitas</div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="card">
+                                        <div class="node-avatar" onclick="triggerAvatarUpload(this)"><i data-feather="moon" style="width:24px;margin-top:2px;"></i></div>
+                                        <span class="node-role" contenteditable="true">Superv. Operações 2ºT</span>
+                                        <div class="node-name" contenteditable="true">A Definir</div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="card">
+                                        <div class="node-avatar" onclick="triggerAvatarUpload(this)">RF</div>
+                                        <span class="node-role" contenteditable="true">Coord. de Captação e Frota</span>
+                                        <div class="node-name" contenteditable="true">Raphael Ferreira</div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </li>
+                        
+                        <li class="level-2">
+                            <div class="card">
+                                <div class="node-avatar" onclick="triggerAvatarUpload(this)">ML</div>
+                                <span class="node-role" contenteditable="true">Diretoria Adm e Fin.</span>
+                                <div class="node-name" contenteditable="true">Monyque Lucena</div>
+                            </div>
+                            <ul>
+                                <li>
+                                    <div class="card">
+                                        <div class="node-avatar" onclick="triggerAvatarUpload(this)">PS</div>
+                                        <span class="node-role" contenteditable="true">Coordenadoria Financeira</span>
+                                        <div class="node-name" contenteditable="true">Paulo Sérgio</div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </li>
+                        
+                        <li class="level-2">
+                            <div class="card">
+                                <div class="node-avatar" onclick="triggerAvatarUpload(this)">BM</div>
+                                <span class="node-role" contenteditable="true">Diretoria Comercial</span>
+                                <div class="node-name" contenteditable="true">Bruno Motta</div>
+                            </div>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </main>
+
+    <script>
+        // Init Feather Icons
+        feather.replace();
+
+        // Image Avatar Upload Logic
+        let currentAvatarNode = null;
+
+        function triggerAvatarUpload(nodeElement) {
+            currentAvatarNode = nodeElement;
+            document.getElementById('global-avatar-upload').click();
+        }
+
+        function handleAvatarUpload(event) {
+            const file = event.target.files[0];
+            if (file && currentAvatarNode) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    currentAvatarNode.style.backgroundImage = `url(${e.target.result})`;
+                    currentAvatarNode.innerHTML = ''; // Replace initials/icon with the image
+                };
+                reader.readAsDataURL(file);
+            }
+            // Reset the input so the same file could be selected again if needed
+            event.target.value = '';
+        }
+
+        // Clean up any remaining focus borders for export
+        function blurAll() {
+            document.querySelectorAll('[contenteditable]').forEach(el => el.blur());
+        }
+
+        // Export Functionality using html2canvas
+        function exportToImage() {
+            blurAll(); // Ensure no blinking text cursor or blue highlights
+
+            const captureArea = document.getElementById('capture-area');
+            const btnSpan = document.querySelector('#btn-export span');
+            const btnIcon = document.querySelector('#btn-export svg');
+            const spinner = document.getElementById('export-spinner');
+
+            // UI feedback
+            btnSpan.style.display = 'none';
+            btnIcon.style.display = 'none';
+            spinner.style.display = 'block';
+
+            // Give font cursor time to disappear
+            setTimeout(() => {
+                html2canvas(captureArea, {
+                    backgroundColor: '#F7FAFC',
+                    scale: 2, // High resolution
+                    logging: false,
+                    useCORS: true,
+                    onclone: function (clonedDoc) {
+                        // Ensure background pattern is captured nicely and hover elements like .after 📸 don't show
+                        const clonedArea = clonedDoc.getElementById('capture-area');
+                        clonedArea.style.padding = '40px';
+                    }
+                }).then(canvas => {
+                    // Create download link
+                    const link = document.createElement('a');
+                    link.download = 'Organograma_TRPR_Americana.png';
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                    
+                    // Reset UI
+                    btnSpan.style.display = 'inline';
+                    btnIcon.style.display = 'inline-block';
+                    spinner.style.display = 'none';
+                }).catch(err => {
+                    console.error("Erro ao gerar imagem: ", err);
+                    alert("Ocorreu um erro ao exportar a imagem. Tente novamente.");
+                    
+                    btnSpan.style.display = 'inline';
+                    btnIcon.style.display = 'inline-block';
+                    spinner.style.display = 'none';
+                });
+            }, 300);
+        }
+    </script>
+</body>
+</html>
